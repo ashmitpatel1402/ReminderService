@@ -1,11 +1,14 @@
 const express=require('express');
 const bodyParser=require('body-parser');
 const {PORT}=require('./config/serverConfig');
-const {sendBasicEmail}=require('./services/email-service');
 const jobs=require('./utils/job');
 const TicketController=require('./controllers/ticket-controller');
-
-const setupAndStartServer=()=>{
+const {createChannel,subscribeMessage}=require('./utils/messageQueue');
+const {REMINDER_BINDING_KEY}=require('./config/serverConfig');
+const EmailService=require('./services/email-service');
+const setupAndStartServer=async ()=>{
+    const channel=await createChannel();
+    subscribeMessage(channel,EmailService.subscribeEvents,REMINDER_BINDING_KEY);
     const app=express();
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended:true}));
